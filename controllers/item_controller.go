@@ -22,8 +22,6 @@ func NewItemController(DB *gorm.DB) ItemController {
 func (ic *ItemController) GetItems(ctx *gin.Context) {
 	var items []models.ItemList
 
-	ic.DB.Preload("ItemRatings").Find(&items)
-
 	query := ic.DB.Table("items").
 		Select("items.id, items.name, items.price, AVG(item_ratings.rating) as avg_rating").
 		Joins("LEFT JOIN item_ratings ON items.id = item_ratings.item_id").
