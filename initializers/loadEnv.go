@@ -14,8 +14,6 @@ type Config struct {
 	DBPort         string `mapstructure:"POSTGRES_PORT"`
 	ServerPort     string `mapstructure:"PORT"`
 
-	ClientOrigin string `mapstructure:"CLIENT_ORIGIN"`
-
 	AccessTokenExpiresIn time.Duration `mapstructure:"TOKEN_EXPIRED_IN"`
 	AccessTokenMaxAge    int           `mapstructure:"TOKEN_MAXAGE"`
 	TokenSecret          string        `mapstructure:"TOKEN_SECRET"`

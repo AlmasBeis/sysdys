@@ -25,18 +25,24 @@ func (ac *AuthController) SignUpUser(ctx *gin.Context) {
 	var payload *models.SignUpInput
 
 	if err := ctx.ShouldBindJSON(&payload); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"status": "fail", "message": err.Error(),
+		})
 		return
 	}
 
 	if payload.Password != payload.PasswordConfirm {
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Passwords do not match"})
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"status": "fail", "message": "Passwords do not match",
+		})
 		return
 	}
 
 	hashedPassword, err := utils.HashPassword(payload.Password)
 	if err != nil {
-		ctx.JSON(http.StatusBadGateway, gin.H{"status": "error", "message": err.Error()})
+		ctx.JSON(http.StatusBadGateway, gin.H{
+			"status": "error", "message": err.Error(),
+		})
 		return
 	}
 
@@ -52,7 +58,9 @@ func (ac *AuthController) SignUpUser(ctx *gin.Context) {
 	result := ac.DB.Create(&newUser)
 
 	if result.Error != nil {
-		ctx.JSON(http.StatusBadGateway, gin.H{"status": "error", "message": "Something bad happened"})
+		ctx.JSON(http.StatusBadGateway, gin.H{
+			"status": "error", "message": "Something bad happened",
+		})
 		return
 	}
 
@@ -65,36 +73,48 @@ func (ac *AuthController) SignInUser(ctx *gin.Context) {
 	var payload *models.SignInInput
 
 	if err := ctx.ShouldBindJSON(&payload); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"status": "fail", "message": err.Error(),
+		})
 		return
 	}
 
 	var user models.User
 	result := ac.DB.First(&user, "email = ?", strings.ToLower(payload.Email))
 	if result.Error != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid email or Password"})
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"status": "fail", "message": "Invalid email or Password",
+		})
 		return
 	}
 
 	if err := utils.VerifyPassword(user.Password, payload.Password); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid email or Password"})
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"status": "fail", "message": "Invalid email or Password",
+		})
 		return
 	}
 
 	config, _ := initializers.LoadConfig(".")
 
-	token, err := utils.GenerateToken(config.AccessTokenExpiresIn, user.ID, config.TokenSecret)
+	token, err := utils.GenerateToken(
+		config.AccessTokenExpiresIn, user.ID, config.TokenSecret,
+	)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"status": "fail", "message": err.Error(),
+		})
 		return
 	}
 
-	ctx.SetCookie("token", token, config.AccessTokenMaxAge*60, "/", "localhost", false, true)
+	ctx.SetCookie("token", token, config.AccessTokenMaxAge*60,
+		"/", "localhost", false, true)
 
 	ctx.JSON(http.StatusOK, gin.H{"status": "success", "token": token})
 }
 
 func (ac *AuthController) LogoutUser(ctx *gin.Context) {
-	ctx.SetCookie("token", "", -1, "/", "localhost", false, true)
+	ctx.SetCookie("token", "", -1, "/",
+		"localhost", false, true)
 	ctx.JSON(http.StatusOK, gin.H{"status": "success"})
 }

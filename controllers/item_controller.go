@@ -60,7 +60,9 @@ func (ic *ItemController) CreateItem(ctx *gin.Context) {
 	var payload *models.ItemInput
 
 	if err := ctx.ShouldBindJSON(&payload); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"status": "fail", "message": err.Error(),
+		})
 		return
 	}
 	newItem := &models.Item{
@@ -70,7 +72,9 @@ func (ic *ItemController) CreateItem(ctx *gin.Context) {
 	result := ic.DB.Create(&newItem)
 
 	if result.Error != nil {
-		ctx.JSON(http.StatusBadGateway, gin.H{"status": "error", "message": result.Error.Error()})
+		ctx.JSON(http.StatusBadGateway, gin.H{
+			"status": "error", "message": result.Error.Error(),
+		})
 		return
 	}
 
@@ -90,7 +94,9 @@ func (ic *ItemController) GiveRatingToItem(ctx *gin.Context) {
 	id, _ := strconv.Atoi(ctx.Param("id"))
 	fmt.Println(id)
 	if err := ctx.ShouldBindJSON(&payload); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"status": "fail", "message": err.Error(),
+		})
 		return
 	}
 	currentUser := ctx.MustGet("currentUser").(models.User)
@@ -100,5 +106,7 @@ func (ic *ItemController) GiveRatingToItem(ctx *gin.Context) {
 		Rating: payload.Rating,
 	}
 	initializers.DB.Create(&newItemRating)
-	ctx.JSON(http.StatusCreated, gin.H{"status": "success", "item_rating": newItemRating})
+	ctx.JSON(http.StatusCreated, gin.H{
+		"status": "success", "item_rating": newItemRating,
+	})
 }
