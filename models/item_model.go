@@ -1,5 +1,6 @@
 package models
 
+// Item structure
 type Item struct {
 	ID    uint   `gorm:"primary_key"`
 	Price int    `gorm:"not null"`
@@ -24,6 +25,7 @@ type ItemInput struct {
 	Name  string `json:"name" binding:"required"`
 }
 
+// ItemRating structure
 type ItemRating struct {
 	ID     uint    `gorm:"primaryKey"`
 	UserID uint    `gorm:"not null"`
