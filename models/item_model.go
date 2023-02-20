@@ -36,3 +36,10 @@ type ItemRating struct {
 type ItemRatingInput struct {
 	Rating float64 `json:"rating" binding:"required"`
 }
+
+type ItemRatingResponse struct {
+	ID     uint    `gorm:"primaryKey"`
+	UserID uint    `gorm:"not null"`
+	ItemID uint    `gorm:"not null"`
+	Rating float64 `json:"rating" binding:"required"`
+}

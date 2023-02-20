@@ -80,11 +80,19 @@ func (ic *ItemController) CreateItem(ctx *gin.Context) {
 }
 
 func (ic *ItemController) GetItemByID(ctx *gin.Context) {
-	item := models.Item{}
+	item := models.ItemList{}
 	fmt.Println(ctx.Param("id"))
 	id, _ := strconv.Atoi(ctx.Param("id"))
-	initializers.DB.Find(&item, "id = ?", id)
-	ctx.JSON(http.StatusOK, gin.H{"status": "success", "item": item})
+	initializers.DB.Table("items").
+		Select("items.id, items.name, items.price, AVG(item_ratings.rating) as avg_rating").
+		Joins("LEFT JOIN item_ratings ON items.id = item_ratings.item_id").
+		Group("items.id").
+		Order("items.id").Find(&item, "items.id = ?", id)
+	if item.ID != 0 {
+		ctx.JSON(http.StatusOK, gin.H{"status": "success", "item": item})
+	} else {
+		ctx.JSON(http.StatusOK, gin.H{"status": "success", "item": nil})
+	}
 }
 
 func (ic *ItemController) GiveRatingToItem(ctx *gin.Context) {
@@ -104,7 +112,13 @@ func (ic *ItemController) GiveRatingToItem(ctx *gin.Context) {
 		Rating: payload.Rating,
 	}
 	initializers.DB.Create(&newItemRating)
+	itemResponse := models.ItemRatingResponse{
+		ID:     newItemRating.ID,
+		ItemID: newItemRating.ItemID,
+		UserID: newItemRating.UserID,
+		Rating: newItemRating.Rating,
+	}
 	ctx.JSON(http.StatusCreated, gin.H{
-		"status": "success", "item_rating": newItemRating,
+		"status": "success", "item_rating": itemResponse,
 	})
 }
