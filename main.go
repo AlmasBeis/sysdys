@@ -17,8 +17,10 @@ var (
 	UserController      controllers.UserController
 	UserRouteController routes.UserRouteController
 
-	ItemController      controllers.ItemController
-	ItemRouteController routes.ItemRouteController
+	ItemController      controllers.PopUpController
+	ItemRouteController routes.PopUpRouteController
+
+	//redisClient *redis.Client
 )
 
 func init() {
@@ -29,13 +31,19 @@ func init() {
 
 	initializers.ConnectDB(&config)
 
+	//redisClient = redis.NewClient(&redis.Options{
+	//	Addr:     "localhost:6379",
+	//	Password: "", // No password by default
+	//	DB:       0,  // Default DB
+	//})
+
 	AuthController = controllers.NewAuthController(initializers.DB)
 	AuthRouteController = routes.NewAuthRouteController(AuthController)
 
 	UserController = controllers.NewUserController(initializers.DB)
 	UserRouteController = routes.NewRouteUserController(UserController)
 
-	ItemController = controllers.NewItemController(initializers.DB)
+	ItemController = controllers.NewPopUpController(initializers.DB)
 	ItemRouteController = routes.NewItemRouteController(ItemController)
 	server = gin.Default()
 }

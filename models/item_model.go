@@ -1,47 +1,72 @@
 package models
 
 // Item structure
-type Item struct {
-	ID    uint   `gorm:"primary_key"`
-	Price int    `gorm:"not null"`
-	Name  string `gorm:"not null"`
+
+type Preference struct {
+	UserID           int    `gorm:"not null"`
+	NotificationType string `gorm:"not null"`
+	Enabled          bool   `gorm:"not null"`
 }
 
-type ItemList struct {
-	ID        uint    `json:"id"`
-	Price     int     `json:"price"`
-	Name      string  `json:"name"`
-	AvgRating float64 `json:"avg_rating"`
+var Request struct {
+	UserID           string `json:"userId" binding:"required"`
+	NotificationType string `json:"notificationTypeId" binding:"required"`
 }
 
-type ItemFilters struct {
-	Price  int
-	Rating int
-	Search string
+type Answer struct {
+	Rating     int    `json:"rating"`
+	Preference string `json:"preference"`
+	Comment    string `json:"comment"`
 }
 
-type ItemInput struct {
-	Price int    `json:"price" binding:"required"`
-	Name  string `json:"name" binding:"required"`
+type Survey struct {
+	UserID uint       // User ID associated with the survey
+	Answer JSONString `json:"answer"`
 }
 
-// ItemRating structure
-type ItemRating struct {
-	ID     uint    `gorm:"primaryKey"`
-	UserID uint    `gorm:"not null"`
-	ItemID uint    `gorm:"not null"`
-	Rating float64 `gorm:"not null"`
-	User   User    `gorm:"foreignKey:UserID"`
-	Item   Item    `gorm:"foreignKey:ItemID"`
+type JSONString string
+
+func (j *JSONString) UnmarshalJSON(data []byte) error {
+	// Here, we store the JSON object as a string without unmarshaling it
+	*j = JSONString(data)
+	return nil
 }
 
-type ItemRatingInput struct {
-	Rating float64 `json:"rating" binding:"required"`
-}
-
-type ItemRatingResponse struct {
-	ID     uint    `gorm:"primaryKey"`
-	UserID uint    `gorm:"not null"`
-	ItemID uint    `gorm:"not null"`
-	Rating float64 `json:"rating" binding:"required"`
-}
+//type ItemList struct {
+//	ID        uint    `json:"id"`
+//	Price     int     `json:"price"`
+//	Name      string  `json:"name"`
+//	AvgRating float64 `json:"avg_rating"`
+//}
+//
+//type ItemFilters struct {
+//	Price  int
+//	Rating int
+//	Search string
+//}
+//
+//type ItemInput struct {
+//	Price int    `json:"price" binding:"required"`
+//	Name  string `json:"name" binding:"required"`
+//}
+//
+//// ItemRating structure
+//type ItemRating struct {
+//	ID     uint    `gorm:"primaryKey"`
+//	UserID uint    `gorm:"not null"`
+//	ItemID uint    `gorm:"not null"`
+//	Rating float64 `gorm:"not null"`
+//	User   User    `gorm:"foreignKey:UserID"`
+//	Item   Item    `gorm:"foreignKey:ItemID"`
+//}
+//
+//type ItemRatingInput struct {
+//	Rating float64 `json:"rating" binding:"required"`
+//}
+//
+//type ItemRatingResponse struct {
+//	ID     uint    `gorm:"primaryKey"`
+//	UserID uint    `gorm:"not null"`
+//	ItemID uint    `gorm:"not null"`
+//	Rating float64 `json:"rating" binding:"required"`
+//}

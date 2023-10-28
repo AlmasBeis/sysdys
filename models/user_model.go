@@ -4,12 +4,19 @@ import "time"
 
 // User structure
 type User struct {
-	ID        uint      `gorm:"primaryKey"`
-	Name      string    `gorm:"type:varchar(255);not null"`
-	Email     string    `gorm:"uniqueIndex;not null"`
-	Password  string    `gorm:"not null"`
-	CreatedAt time.Time `gorm:"not null"`
-	UpdatedAt time.Time `gorm:"not null"`
+	ID           uint      `gorm:"primaryKey"`
+	Name         string    `gorm:"type:varchar(255);not null"`
+	Email        string    `gorm:"uniqueIndex;not null"`
+	Password     string    `gorm:"not null"`
+	CreatedAt    time.Time `gorm:"not null"`
+	UpdatedAt    time.Time `gorm:"not null"`
+	PopUpActive  string    `gorm:"not null"`
+	SurveyActive string    `gorm:"not null"`
+}
+type Group struct {
+	ID    uint   `gorm:"primaryKey"`
+	Name  string `gorm:"type:varchar(255);not null"`
+	Email string `gorm:"uniqueIndex;not null"`
 }
 
 type SignUpInput struct {

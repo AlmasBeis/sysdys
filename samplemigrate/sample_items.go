@@ -1,5 +1,5 @@
 // deprecated
-package main
+package samplemigrate
 
 import (
 	"FixPrice/initializers"
