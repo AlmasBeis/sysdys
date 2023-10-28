@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"net/http"
+	"os"
 )
 
 type PopUpController struct {
@@ -24,11 +25,19 @@ func (ic *PopUpController) StoreUserPreferences(c *gin.Context) {
 		return
 	}
 
-	// Create or update the user's preference in the PostgreSQL database
-	db := ic.DB.Create(&preference)
-	if db.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to store preference"})
-		return
+	if preference.NotificationType == "popUp" {
+		// Update the user's PopUpActive field to true
+		userID := preference.UserID // Assuming UserID is set in the preference
+		if err := ic.DB.Model(&models.User{}).Where("id = ?", userID).Update("PopUpActive", preference.Enabled).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update PopUpActive"})
+			return
+		}
+	} else if preference.NotificationType == "survey" {
+		userID := preference.UserID // Assuming UserID is set in the preference
+		if err := ic.DB.Model(&models.User{}).Where("id = ?", userID).Update("SurveyActive", preference.Enabled).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update SurveyActive"})
+			return
+		}
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Preference stored successfully"})
@@ -37,6 +46,8 @@ func (ic *PopUpController) StoreUserPreferences(c *gin.Context) {
 func (ic *PopUpController) SendNotification(c *gin.Context) {
 	// Parse the request data
 	request := models.Request
+	var ugroup models.UserGroup
+	var group models.Group
 
 	if err := c.ShouldBindJSON(&request); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -46,39 +57,55 @@ func (ic *PopUpController) SendNotification(c *gin.Context) {
 	// Retrieve the user's preference from the PostgreSQL database
 	userID := request.UserID
 	notificationType := request.NotificationType
+	answer := request.Answer
 
-	var preference models.Preference
-	if err := ic.DB.Where("user_id = ? AND notification_type = ?", userID, notificationType).First(&preference).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve preference"})
+	var user models.User
+	if err := ic.DB.Where("id = ?", userID).First(&user).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return
 	}
-	fmt.Println(preference)
 
-	if preference.Enabled {
-		if preference.NotificationType == "survey" {
-			htmlBody := `<html>
-			<head></head>
-			<body>
-				<h1>Hello User</h1>
-				<p>This is a sample HTML survey notification.</p>
-			</body>
-			</html>`
-			c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(htmlBody))
-		} else if preference.NotificationType == "ad" {
-			htmlBody := `<html>
-			<head></head>
-			<body>
-				<h1>Hello User</h1>
-				<p>This is a sample HTML ad notification.</p>
-			</body>
-			</html>`
-			c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(htmlBody))
+	fmt.Println(user)
+
+	if notificationType == "survey" {
+		if user.SurveyActive == "true" {
+			ugroup.UserID = user.ID
+			if err := ic.DB.Where("name = ?", answer.Interest).First(&group).Error; err != nil {
+				c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+				return
+			}
+			ugroup.GroupID = group.ID
+			if err := ic.DB.Create(&ugroup).Error; err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create the survey"})
+				return
+			}
+			c.JSON(http.StatusOK, gin.H{"message": "Survey is filled! "})
 		}
-	} else {
-		c.JSON(http.StatusOK, gin.H{"message": "Notification not sent as user preference is 'false'"})
+	} else if notificationType == "popUp" {
+
+		if user.PopUpActive == "true" {
+			if err := ic.DB.Where("user_id = ?", user.ID).First(&ugroup).Error; err != nil {
+				c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+				return
+			}
+			if err := ic.DB.Where("id = ?", ugroup.GroupID).First(&group).Error; err != nil {
+				c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+				return
+			}
+			if group.Name == "Computers" {
+				htmlFilePath := "htmpTepmlates/Advertisment.html" // Update the path to your HTML file
+				htmlContent, err := os.ReadFile(htmlFilePath)
+				if err != nil {
+					c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read HTML file"})
+					return
+				}
+				c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(htmlContent))
+			}
+		} else {
+			c.JSON(http.StatusOK, gin.H{"message": "Notification not sent as user preference is 'false'"})
+		}
 	}
 }
-
 func (ic *PopUpController) CreateSurvey(c *gin.Context) {
 	var survey models.Survey
 

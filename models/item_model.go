@@ -3,20 +3,21 @@ package models
 // Item structure
 
 type Preference struct {
-	UserID           int    `gorm:"not null"`
-	NotificationType string `gorm:"not null"`
-	Enabled          bool   `gorm:"not null"`
+	UserID           int    `json:"userId" gorm:"not null"`
+	NotificationType string `json:"notificationType" gorm:"not null"`
+	Enabled          string `json:"enabled" gorm:"not null"`
 }
 
 var Request struct {
-	UserID           string `json:"userId" binding:"required"`
+	UserID           int    `json:"userId" binding:"required"`
 	NotificationType string `json:"notificationTypeId" binding:"required"`
+	Answer           Answer `json:"answer"`
 }
 
 type Answer struct {
-	Rating     int    `json:"rating"`
-	Preference string `json:"preference"`
-	Comment    string `json:"comment"`
+	Rating   int    `json:"rating"`
+	Interest string `json:"interest"`
+	Comment  string `json:"comment"`
 }
 
 type Survey struct {

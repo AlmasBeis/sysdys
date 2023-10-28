@@ -10,13 +10,19 @@ type User struct {
 	Password     string    `gorm:"not null"`
 	CreatedAt    time.Time `gorm:"not null"`
 	UpdatedAt    time.Time `gorm:"not null"`
-	PopUpActive  string    `gorm:"not null"`
-	SurveyActive string    `gorm:"not null"`
+	PopUpActive  string    `json:"popUpActive" gorm:"not null"`
+	SurveyActive string    `json:"surveyActive" gorm:"not null"`
 }
 type Group struct {
-	ID    uint   `gorm:"primaryKey"`
-	Name  string `gorm:"type:varchar(255);not null"`
-	Email string `gorm:"uniqueIndex;not null"`
+	ID          uint   `gorm:"primaryKey"`
+	Name        string `gorm:"type:varchar(255);not null"`
+	PopUpActive string `gorm:"not null"`
+}
+
+type UserGroup struct {
+	ID      uint `json:"id" gorm:"primaryKey"`
+	UserID  uint `json:"userId" gorm:"not null"`
+	GroupID uint `json:"groupId" gorm:"not null"`
 }
 
 type SignUpInput struct {
